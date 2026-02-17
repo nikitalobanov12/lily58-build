@@ -23,7 +23,7 @@ Layer names in this setup:
 Tab Q   W   E   R   T        Y   U   I   O   P   -
 Caps A  S   D   F   G        H   J   K   L   ;   '
 Shift Z X   C   V   B        [   ]   N   M   ,   .
-        /   Bspc Gui Alt Lwr  Spc Ent Rse PgDn PgUp
+        /   Bspc Gui Alt Lwr  Ent Spc Rse PgDn PgUp
 ```
 
 ### Layer 1 (Lower)
