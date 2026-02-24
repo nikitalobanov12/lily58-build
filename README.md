@@ -1,69 +1,73 @@
 # lily58-build
 
-Personal Lily58 QMK setup and keymap history.
+Personal Lily58 QMK source-of-truth repo.
 
-## Contents
+## Why this exists
 
-- `keyboards/lily58/keymaps/lily58_feb16/keymap.c`
-- `keyboards/lily58/keymaps/lily58_feb16/rules.mk`
-- `keymaps/lily58_feb16.json` (exported from current keymap)
+- `*.uf2` files are build artifacts, not editable source.
+- The source of truth lives here under `keyboards/lily58/keymaps/<keymap_name>/`.
+- Every build/export goes through scripts so there is one consistent flow.
 
-## Layer Diagram
+## Repo structure
 
-Layer names in this setup:
+- `keyboards/lily58/keymaps/<keymap_name>/keymap.c`
+- `keyboards/lily58/keymaps/<keymap_name>/rules.mk`
+- `keymaps/<keymap_name>.json` (export snapshot)
+- `keymaps/latest.json` (latest export alias)
+- `firmware/*.uf2` (local build artifacts, gitignored)
+- `scripts/` (sync/build/export workflow)
 
-- Layer 0: Base
-- Layer 1: Lower (`MO(1)`)
-- Layer 2: Raise (`MO(2)`)
+## Naming convention
 
-### Layer 0 (Base)
+Use date-based keymap names:
 
-```text
-`   1   2   3   4   5        6   7   8   9   0   =
-Tab Q   W   E   R   T        Y   U   I   O   P   -
-Caps A  S   D   F   G        H   J   K   L   ;   '
-Shift Z X   C   V   B        [   ]   N   M   ,   .
-        /   Bspc Gui Alt Lwr  Ent Spc Rse PgDn PgUp
-```
+- `lily58_2026_02_23_devsymbols`
+- `lily58_2026_02_24_media_fix`
 
-### Layer 1 (Lower)
+This makes history obvious and prevents "which file is newest?" confusion.
 
-```text
-TRNS TRNS TRNS TRNS TRNS TRNS   TRNS TRNS TRNS TRNS TRNS TRNS
-F1   F2   F3   F4   F5   F6     F7   F8   F9   F10  F11  F12
-Caps !    @    #    $    %      ^    &    *    (    )    ~
-Shift TRNS TRNS TRNS TRNS TRNS  TRNS TRNS NO   _    +    {
-       }    Del  TRNS Alt TRNS  Pscr MO(3) TRNS TRNS
-```
+## Workflow
 
-### Layer 2 (Raise)
+1. Edit the keymap source in this repo.
+2. Sync to your local QMK checkout.
+3. Compile firmware.
+4. Export JSON snapshot.
 
-```text
-TRNS TRNS TRNS TRNS TRNS TRNS   MPrv MPlay MNext Mute Vol- Vol+
-`    1    2    3    4    5      6    7     8     9    0    TRNS
-Caps F2   F3   F4   F5   F6     Left Down  Up    Right NO   NO
-Shift F8  F9   F10  F11  F12    LCtrl LAlt LGui  Shift TRNS TRNS
-       TRNS Del  TRNS Alt TRNS  TRNS TRNS TRNS TRNS
-```
-
-## Build
-
-Run from your QMK checkout:
+### 1) Sync to QMK
 
 ```bash
-qmk compile -kb lily58/rev1 -km lily58_feb16 -e CONVERT_TO=helios
+./scripts/sync-to-qmk.sh <keymap_name>
 ```
 
-## Refresh JSON export
+Default QMK directory is `~/keychron_qmk`. Override with `QMK_DIR=/path/to/qmk`.
 
-Run from your QMK checkout:
+### 2) Build UF2
 
 ```bash
-qmk c2json -kb lily58/rev1 -km lily58_feb16 -o /path/to/lily58-build/keymaps/lily58_feb16.json
+./scripts/build-keymap.sh <keymap_name>
 ```
 
-Output UF2:
+This script:
+- syncs the keymap into QMK
+- runs `qmk compile -kb lily58/rev1 -km <keymap_name> -e CONVERT_TO=helios`
+- copies output to:
+  - `firmware/<timestamp>_<keymap_name>.uf2`
+  - `firmware/latest.uf2`
+
+### 3) Export JSON snapshot
 
 ```bash
-lily58_rev1_lily58_feb16_helios.uf2
+./scripts/export-json.sh <keymap_name>
 ```
+
+This script writes:
+- `keymaps/<keymap_name>.json`
+- `keymaps/latest.json`
+
+## Recommended release checklist
+
+- Build succeeds via `./scripts/build-keymap.sh <keymap_name>`
+- Flash `firmware/latest.uf2`
+- Smoke test: base layer, symbols, nav, media keys
+- Export snapshot with `./scripts/export-json.sh <keymap_name>`
+- Commit `keymap.c`, `rules.mk`, and JSON snapshot together
