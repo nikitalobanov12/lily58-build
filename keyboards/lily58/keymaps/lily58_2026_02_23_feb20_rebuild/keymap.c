@@ -14,9 +14,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 #ifdef OLED_ENABLE
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
-    if (is_keyboard_master())
-        return OLED_ROTATION_180;
-    return rotation;
+    return OLED_ROTATION_180;
 }
 
 static const unsigned char PROGMEM meowl_128x32[512] = {
@@ -58,7 +56,7 @@ static const unsigned char PROGMEM meowl_128x32[512] = {
 };
 
 bool oled_task_user(void) {
-    if (!is_keyboard_master()) {
+    if (is_keyboard_master()) {
         oled_invert(true);
         oled_write_raw_P((const char *)meowl_128x32, sizeof(meowl_128x32));
         return false;
@@ -67,32 +65,33 @@ bool oled_task_user(void) {
     uint8_t layer = get_highest_layer(layer_state);
     uint8_t wpm   = get_current_wpm();
 
-    oled_clear();
-    oled_set_cursor(0, 0);
-    oled_write_ln_P(PSTR("LAYER"), false);
-
+    const char *layerName = "unkn";
     switch (layer) {
         case 0:
-            oled_write_ln_P(PSTR("BASE"), false);
+            layerName = "base";
             break;
         case 1:
-            oled_write_ln_P(PSTR("LOWR"), false);
+            layerName = "lowr";
             break;
         case 2:
-            oled_write_ln_P(PSTR("RASE"), false);
+            layerName = "rase";
             break;
         case 3:
-            oled_write_ln_P(PSTR("ADJ "), false);
-            break;
-        default:
-            oled_write_ln_P(PSTR("UNKN"), false);
+            layerName = "adj";
             break;
     }
 
-    char wpmBuffer[8];
-    snprintf(wpmBuffer, sizeof(wpmBuffer), "%3d", wpm);
-    oled_write_P(PSTR("WPM  "), false);
-    oled_write_ln(wpmBuffer, false);
+    char layerLine[20];
+    snprintf(layerLine, sizeof(layerLine), "layer %s", layerName);
+
+    oled_clear();
+    oled_set_cursor(0, 0);
+    oled_write_ln(layerLine, false);
+
+    char wpmLine[20];
+    snprintf(wpmLine, sizeof(wpmLine), "wpm %3d", wpm);
+    oled_set_cursor(0, 2);
+    oled_write_ln(wpmLine, false);
 
     return false;
 }
