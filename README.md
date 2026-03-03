@@ -6,14 +6,6 @@ Personal Lily58 QMK source-of-truth repo.
 <img width="795" height="342" alt="image" src="https://github.com/user-attachments/assets/3bea17a1-93b8-46a0-869d-9ac1a9470fa9" />
 <img width="794" height="340" alt="image" src="https://github.com/user-attachments/assets/d03fd08b-ac0c-4fe3-a632-22954358e10d" />
 
-
-
-## Why this exists
-
-- `*.uf2` files are build artifacts, not editable source.
-- The source of truth lives here under `keyboards/lily58/keymaps/<keymap_name>/`.
-- Every build/export goes through scripts so there is one consistent flow.
-
 ## Repo structure
 
 - `keyboards/lily58/keymaps/<keymap_name>/keymap.c`
